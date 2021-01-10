@@ -6,13 +6,15 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-/*
-create table if not exists "newsfeed" (
-	"ID" integer not null primary key autoincrement,
-	"content" text
-);
-*/
-
 func main() {
-	db, err := sql.Open("sqlite3", "./newsfeed.db")
+	db, _ := sql.Open("sqlite3", "./newsfeed.db")
+
+	stmt, _ := db.Prepare(`
+		create table if not exists "newsfeed" (
+			"ID" integer not null primary key autoincrement,
+			"content" text
+		);
+	`)
+
+	stmt.Exec()
 }
