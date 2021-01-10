@@ -10,11 +10,17 @@ func main() {
 	db, _ := sql.Open("sqlite3", "./newsfeed.db")
 
 	stmt, _ := db.Prepare(`
-		create table if not exists "newsfeed" (
-			"ID" integer not null primary key autoincrement,
-			"content" text
-		);
+		insert into newsfeed (content) values (?)
 	`)
 
-	stmt.Exec()
+	stmt.Exec("Hola Youtube!")
+
+	// stmt, _ := db.Prepare(`
+	// 	create table if not exists "newsfeed" (
+	// 		"ID" integer not null primary key autoincrement,
+	// 		"content" text
+	// 	);
+	// `)
+
+	// stmt.Exec()
 }
