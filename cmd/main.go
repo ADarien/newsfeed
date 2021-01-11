@@ -2,25 +2,43 @@ package main
 
 import (
 	"database/sql"
+	"net/http"
+	"newsfeed/platform/newsfeed"
 
+	"github.com/go-chi/chi"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/qkgo/yin"
 )
 
 func main() {
 	db, _ := sql.Open("sqlite3", "./newsfeed.db")
+	feed := newsfeed.NewFeed(db)
 
-	stmt, _ := db.Prepare(`
-		insert into newsfeed (content) values (?)
-	`)
+	// // feed.Add(newsfeed.Item{
+	// // 	Content: "Hello!",
+	// // })
 
-	stmt.Exec("Hola Youtube!")
+	// items := feed.Get()
+	// fmt.Println(items)
+	r := chi.NewRouter()
+	r.Use(yin.SimpleLogger)
 
-	// stmt, _ := db.Prepare(`
-	// 	create table if not exists "newsfeed" (
-	// 		"ID" integer not null primary key autoincrement,
-	// 		"content" text
-	// 	);
-	// `)
+	r.Get("/posts", func(w http.ResponseWriter, r *http.Request) {
+		res, _ := yin.Event(w, r)
+		items := feed.Get()
+		res.SendJSON(items)
+	})
 
-	// stmt.Exec()
+	r.Post("/posts", func(w http.ResponseWriter, r *http.Request) {
+		res, req := yin.Event(w, r)
+		body := map[string]string{}
+		req.BindBody(&body)
+		item := newsfeed.Item{
+			Content: body["content"],
+		}
+		feed.Add(item)
+		res.SendStatus(204)
+	})
+
+	http.ListenAndServe(":3000", r)
 }
